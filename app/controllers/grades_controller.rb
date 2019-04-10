@@ -303,6 +303,6 @@ class GradesController < ApplicationController
   end
 
   def mean(array)
-    array.inject(0, :+)/array.size.to_f
+    array.inject(0, :+) / array.size.to_f
   end
 end
