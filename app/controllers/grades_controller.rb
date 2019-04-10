@@ -18,12 +18,15 @@ class GradesController < ApplicationController
       are_needed_authorizations_present?(params[:id], "reader", "reviewer") and
       check_self_review_status
     when 'view_team'
-      if ['Student'].include? current_role_name # students can only see the head map for their own team
-        participant = AssignmentParticipant.find(params[:id])
-        session[:user].id == participant.user_id
-      else
-        true
-      end
+      return true unless ['Student'].include? current_role_name
+      participant = AssignmentParticipant.find(params[:id])
+      session[:user].id == participant.user_id
+      # if ['Student'].include? current_role_name # students can only see the head map for their own team
+      #   participant = AssignmentParticipant.find(params[:id])
+      #   session[:user].id == participant.user_id
+      # else
+      #   true
+      # end
     else
       ['Instructor',
        'Teaching Assistant',
