@@ -21,12 +21,6 @@ class GradesController < ApplicationController
       return true unless ['Student'].include? current_role_name
       participant = AssignmentParticipant.find(params[:id])
       session[:user].id == participant.user_id
-      # if ['Student'].include? current_role_name # students can only see the head map for their own team
-      #   participant = AssignmentParticipant.find(params[:id])
-      #   session[:user].id == participant.user_id
-      # else
-      #   true
-      # end
     else
       ['Instructor',
        'Teaching Assistant',
@@ -98,7 +92,7 @@ class GradesController < ApplicationController
     counter_for_same_rubric = 0
     questionnaires.each do |questionnaire|
       @round = nil
-      if @assignment.varying_rubrics_by_round? && questionnaire.type == "ReviewQuestionnaire"
+      if @assignment.varying_rubrics_by_round? && questionnaire.type == 'ReviewQuestionnaire'
         questionnaires = AssignmentQuestionnaire.where(assignment_id: @assignment.id, questionnaire_id: questionnaire.id)
         if questionnaires.count > 1
           @round = questionnaires[counter_for_same_rubric].used_in_round
@@ -130,19 +124,21 @@ class GradesController < ApplicationController
     participant = AssignmentParticipant.find(params[:id])
     reviewer = AssignmentParticipant.find_or_create_by(user_id: session[:user].id, parent_id: participant.assignment.id)
     reviewer.set_handle if reviewer.new_record?
-    review_exists = true
+    # review_exists = true
     reviewee = participant.team
     review_mapping = ReviewResponseMap.find_or_create_by(reviewee_id: reviewee.id, reviewer_id: reviewer.id, reviewed_object_id: participant.assignment.id)
     if review_mapping.new_record?
-      review_exists = false
+      # review_exists = false
+      redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: 'instructor'
     else
       review = Response.find_by(map_id: review_mapping.map_id)
+      redirect_to controller: 'response', action: 'edit', id: review.id, return: 'instructor'
     end
-    if review_exists
-      redirect_to controller: 'response', action: 'edit', id: review.id, return: "instructor"
-    else
-      redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: "instructor"
-    end
+    # if review_exists
+    #   redirect_to controller: 'response', action: 'edit', id: review.id, return: 'instructor'
+    # else
+    #   redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: 'instructor'
+    # end
   end
 
   # This method is used from edit methods
