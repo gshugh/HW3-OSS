@@ -124,15 +124,9 @@ class GradesController < ApplicationController
     participant = AssignmentParticipant.find(params[:id])
     reviewer = AssignmentParticipant.find_or_create_by(user_id: session[:user].id, parent_id: participant.assignment.id)
     reviewer.set_handle if reviewer.new_record?
-    # review_exists = true
     reviewee = participant.team
     review_mapping = ReviewResponseMap.find_or_create_by(reviewee_id: reviewee.id, reviewer_id: reviewer.id, reviewed_object_id: participant.assignment.id)
-    # if review_mapping.new_record?
-    #   redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: 'instructor'
-    # else
-    #   review = Response.find_by(map_id: review_mapping.map_id)
-    #   redirect_to controller: 'response', action: 'edit', id: review.id, return: 'instructor'
-    # end
+
     redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: 'instructor' and return if review_mapping.new_record?
     review = Response.find_by(map_id: review_mapping.map_id)
     redirect_to controller: 'response', action: 'edit', id: review.id, return: 'instructor'
@@ -150,9 +144,9 @@ class GradesController < ApplicationController
 
   def update
     participant = AssignmentParticipant.find(params[:id])
-    total_score = params[:total_score]
+    total_score = format('%.2f',params[:total_score])
     participant_grade = params[:participant][:grade]
-    if format('%.2f', total_score) != participant_grade
+    if total_score != participant_grade
       participant.update_attributes(grade: participant_grade)
       message = if participant.grade.nil?
                   'The computed score will be used for ' + participant.user.name + '.'
@@ -190,8 +184,8 @@ class GradesController < ApplicationController
       team = @participant.team
       unless team.nil? or team.user? session[:user]
         flash[:error] = 'You are not on the team that wrote this feedback'
-        redirect_to '/'
-        return true
+        redirect_to '/' and return true
+        # return true
       end
     else
       reviewer = AssignmentParticipant.where(user_id: session[:user].id, parent_id: @participant.assignment.id).first
