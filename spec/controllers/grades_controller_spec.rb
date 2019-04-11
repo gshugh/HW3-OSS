@@ -146,7 +146,7 @@ describe GradesController do
 
   describe '#update' do
     before(:each) do
-      allow(participant).to receive(:update_attribute).with(any_args).and_return(participant)
+      allow(participant).to receive(:update_attributes).with(any_args).and_return(participant)
     end
     context 'when total is not equal to participant\'s grade' do
       it 'updates grades and redirects to grades#edit page' do
