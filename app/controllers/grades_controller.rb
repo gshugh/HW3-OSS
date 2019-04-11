@@ -127,18 +127,15 @@ class GradesController < ApplicationController
     # review_exists = true
     reviewee = participant.team
     review_mapping = ReviewResponseMap.find_or_create_by(reviewee_id: reviewee.id, reviewer_id: reviewer.id, reviewed_object_id: participant.assignment.id)
-    if review_mapping.new_record?
-      # review_exists = false
-      redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: 'instructor'
-    else
-      review = Response.find_by(map_id: review_mapping.map_id)
-      redirect_to controller: 'response', action: 'edit', id: review.id, return: 'instructor'
-    end
-    # if review_exists
-    #   redirect_to controller: 'response', action: 'edit', id: review.id, return: 'instructor'
-    # else
+    # if review_mapping.new_record?
     #   redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: 'instructor'
+    # else
+    #   review = Response.find_by(map_id: review_mapping.map_id)
+    #   redirect_to controller: 'response', action: 'edit', id: review.id, return: 'instructor'
     # end
+    redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: 'instructor' and return if review_mapping.new_record?
+    review = Response.find_by(map_id: review_mapping.map_id)
+    redirect_to controller: 'response', action: 'edit', id: review.id, return: 'instructor'
   end
 
   # This method is used from edit methods
