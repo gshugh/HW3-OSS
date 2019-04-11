@@ -195,12 +195,10 @@ class GradesController < ApplicationController
     # ACS Check if team count is more than 1 instead of checking if it is a team assignment
     if @participant.assignment.max_team_size > 1
       team = @participant.team
-      unless team.nil?
-        unless team.user? session[:user]
-          flash[:error] = 'You are not on the team that wrote this feedback'
-          redirect_to '/'
-          return true
-        end
+      unless team.nil? or team.user? session[:user]
+        flash[:error] = 'You are not on the team that wrote this feedback'
+        redirect_to '/'
+        return true
       end
     else
       reviewer = AssignmentParticipant.where(user_id: session[:user].id, parent_id: @participant.assignment.id).first
@@ -287,9 +285,9 @@ class GradesController < ApplicationController
 
   def bar_chart(scores, width = 100, height = 100, spacing = 1)
     link = nil
-    GoogleChart::BarChart.new("#{width}x#{height}", " ", :vertical, false) do |bc|
+    GoogleChart::BarChart.new("#{width}x#{height}", ' ', :vertical, false) do |bc|
       data = scores
-      bc.data "Line green", data, '990000'
+      bc.data 'Line green', data, '990000'
       bc.axis :y, range: [0, data.max], positions: data.minmax
       bc.show_legend = false
       bc.stacked = false
@@ -310,7 +308,7 @@ class GradesController < ApplicationController
     array.inject(0, :+) / array.size.to_f
   end
 
-  private def median(array)
+  def median(array)
     sorted = array.sort
     len = sorted.length
     (sorted[(len - 1) / 2] + sorted[len / 2]) / 2.0
