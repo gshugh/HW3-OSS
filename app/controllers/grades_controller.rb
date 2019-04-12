@@ -21,12 +21,6 @@ class GradesController < ApplicationController
       return true unless ['Student'].include? current_role_name
       participant = AssignmentParticipant.find(params[:id])
       session[:user].id == participant.user_id
-      # if ['Student'].include? current_role_name # students can only see the head map for their own team
-      #   participant = AssignmentParticipant.find(params[:id])
-      #   session[:user].id == participant.user_id
-      # else
-      #   true
-      # end
     else
       ['Instructor',
        'Teaching Assistant',
@@ -98,7 +92,7 @@ class GradesController < ApplicationController
     counter_for_same_rubric = 0
     questionnaires.each do |questionnaire|
       @round = nil
-      if @assignment.varying_rubrics_by_round? && questionnaire.type == "ReviewQuestionnaire"
+      if @assignment.varying_rubrics_by_round? && questionnaire.type == 'ReviewQuestionnaire'
         questionnaires = AssignmentQuestionnaire.where(assignment_id: @assignment.id, questionnaire_id: questionnaire.id)
         if questionnaires.count > 1
           @round = questionnaires[counter_for_same_rubric].used_in_round
@@ -130,19 +124,12 @@ class GradesController < ApplicationController
     participant = AssignmentParticipant.find(params[:id])
     reviewer = AssignmentParticipant.find_or_create_by(user_id: session[:user].id, parent_id: participant.assignment.id)
     reviewer.set_handle if reviewer.new_record?
-    review_exists = true
     reviewee = participant.team
     review_mapping = ReviewResponseMap.find_or_create_by(reviewee_id: reviewee.id, reviewer_id: reviewer.id, reviewed_object_id: participant.assignment.id)
-    if review_mapping.new_record?
-      review_exists = false
-    else
-      review = Response.find_by(map_id: review_mapping.map_id)
-    end
-    if review_exists
-      redirect_to controller: 'response', action: 'edit', id: review.id, return: "instructor"
-    else
-      redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: "instructor"
-    end
+
+    redirect_to controller: 'response', action: 'new', id: review_mapping.map_id, return: 'instructor' and return if review_mapping.new_record?
+    review = Response.find_by(map_id: review_mapping.map_id)
+    redirect_to controller: 'response', action: 'edit', id: review.id, return: 'instructor'
   end
 
   # This method is used from edit methods
@@ -196,12 +183,10 @@ class GradesController < ApplicationController
     # ACS Check if team count is more than 1 instead of checking if it is a team assignment
     if @participant.assignment.max_team_size > 1
       team = @participant.team
-      unless team.nil?
-        unless team.user? session[:user]
-          flash[:error] = 'You are not on the team that wrote this feedback'
-          redirect_to '/'
-          return true
-        end
+      unless team.nil? or team.user? session[:user]
+        flash[:error] = 'You are not on the team that wrote this feedback'
+        redirect_to '/' and return true
+        # return true
       end
     else
       reviewer = AssignmentParticipant.where(user_id: session[:user].id, parent_id: @participant.assignment.id).first
@@ -288,9 +273,9 @@ class GradesController < ApplicationController
 
   def bar_chart(scores, width = 100, height = 100, spacing = 1)
     link = nil
-    GoogleChart::BarChart.new("#{width}x#{height}", " ", :vertical, false) do |bc|
+    GoogleChart::BarChart.new("#{width}x#{height}", ' ', :vertical, false) do |bc|
       data = scores
-      bc.data "Line green", data, '990000'
+      bc.data 'Line green', data, '990000'
       bc.axis :y, range: [0, data.max], positions: data.minmax
       bc.show_legend = false
       bc.stacked = false
@@ -311,7 +296,7 @@ class GradesController < ApplicationController
     array.inject(0, :+) / array.size.to_f
   end
 
-  private def median(array)
+  def median(array)
     sorted = array.sort
     len = sorted.length
     (sorted[(len - 1) / 2] + sorted[len / 2]) / 2.0

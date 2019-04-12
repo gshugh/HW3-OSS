@@ -91,8 +91,10 @@ describe GradesController do
     end
   end
 
-  xdescribe '#view_team' do
+  describe '#view_team' do
     it 'renders grades#view_team page' do
+      allow(AssignmentQuestionnaire).to receive(:find_by).with(assignment_id: 1, questionnaire_id: 1).and_return(assignment_questionnaire)
+      allow(AssignmentQuestionnaire).to receive(:where).with(any_args).and_return([assignment_questionnaire])
       allow(participant).to receive(:team).and_return(team)
       params = {id: 1}
       get :view_team, params
