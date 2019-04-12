@@ -8,7 +8,7 @@ class GradesController < ApplicationController
   include GradesHelper
 
   def action_allowed?
-    instructors = %q[Instructor
+    instructors = %w[Instructor
                      Teaching Assistant
                      Administrator
                      Super-Administrator]
