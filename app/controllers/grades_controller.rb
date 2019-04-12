@@ -8,13 +8,13 @@ class GradesController < ApplicationController
   include GradesHelper
 
   def action_allowed?
+    instructors = %q[Instructor
+                     Teaching Assistant
+                     Administrator
+                     Super-Administrator]
     case params[:action]
     when 'view_my_scores'
-      ['Instructor',
-       'Teaching Assistant',
-       'Administrator',
-       'Super-Administrator',
-       'Student'].include? current_role_name and
+      [instructors << 'Student'].include? current_role_name and
       are_needed_authorizations_present?(params[:id], "reader", "reviewer") and
       check_self_review_status
     when 'view_team'
@@ -22,10 +22,7 @@ class GradesController < ApplicationController
       participant = AssignmentParticipant.find(params[:id])
       session[:user].id == participant.user_id
     else
-      ['Instructor',
-       'Teaching Assistant',
-       'Administrator',
-       'Super-Administrator'].include? current_role_name
+      instructors.include? current_role_name
     end
   end
 
