@@ -144,39 +144,40 @@ describe GradesController do
     end
   end
 
+  # #update no longer used
   describe '#update' do
-    before(:each) do
-      allow(participant).to receive(:update_attribute).with(any_args).and_return(participant)
-    end
-    context 'when total is not equal to participant\'s grade' do
-      it 'updates grades and redirects to grades#edit page' do
-        params = {
-          id: 1,
-          total_score: 98,
-          participant: {
-            grade: 96
-          }
-        }
-        post :update, params
-        expect(flash[:note]).to eq("The computed score will be used for #{participant.user.name}.")
-        expect(response).to redirect_to('/grades/1/edit')
-      end
-    end
-
-    context 'when total is equal to participant\'s grade' do
-      it 'redirects to grades#edit page' do
-        params = {
-          id: 1,
-          total_score: 98,
-          participant: {
-            grade: 98
-          }
-        }
-        post :update, params
-        expect(flash[:note]).to eq("The computed score will be used for #{participant.user.name}.")
-        expect(response).to redirect_to('/grades/1/edit')
-      end
-    end
+    # before(:each) do
+    #   allow(participant).to receive(:update_attribute).with(any_args).and_return(participant)
+    # end
+    # context 'when total is not equal to participant\'s grade' do
+    #   it 'updates grades and redirects to grades#edit page' do
+    #     params = {
+    #       id: 1,
+    #       total_score: 98,
+    #       participant: {
+    #         grade: 96
+    #       }
+    #     }
+    #     post :update, params
+    #     expect(flash[:note]).to eq("The computed score will be used for #{participant.user.name}.")
+    #     expect(response).to redirect_to('/grades/1/edit')
+    #   end
+    # end
+    #
+    # context 'when total is equal to participant\'s grade' do
+    #   it 'redirects to grades#edit page' do
+    #     params = {
+    #       id: 1,
+    #       total_score: 98,
+    #       participant: {
+    #         grade: 98
+    #       }
+    #     }
+    #     post :update, params
+    #     expect(flash[:note]).to eq("The computed score will be used for #{participant.user.name}.")
+    #     expect(response).to redirect_to('/grades/1/edit')
+    #   end
+    # end
   end
 
   describe '#save_grade_and_comment_for_submission' do

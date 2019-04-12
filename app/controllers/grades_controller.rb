@@ -155,20 +155,21 @@ class GradesController < ApplicationController
     questions
   end
 
+  # No longer used
   def update
-    participant = AssignmentParticipant.find(params[:id])
-    total_score = params[:total_score]
-    participant_grade = parms[:participant][:grade]
-    if format("%.2f", total_score) != participant_grade
-      participant.update_attributes(grade: participant_grade)
-      message = if participant.grade.nil?
-                  "The computed score will be used for " + participant.user.name + "."
-                else
-                  "A score of " + participant_grade + "% has been saved for " + participant.user.name + "."
-                end
-    end
-    flash[:note] = message
-    redirect_to action: 'edit', id: params[:id]
+    # participant = AssignmentParticipant.find(params[:id])
+    # total_score = params[:total_score]
+    # participant_grade = parms[:participant][:grade]
+    # if format("%.2f", total_score) != participant_grade
+    #   participant.update_attributes(grade: participant_grade)
+    #   message = if participant.grade.nil?
+    #               "The computed score will be used for " + participant.user.name + "."
+    #             else
+    #               "A score of " + participant_grade + "% has been saved for " + participant.user.name + "."
+    #             end
+    # end
+    # flash[:note] = message
+    # redirect_to action: 'edit', id: params[:id]
   end
 
   def save_grade_and_comment_for_submission
