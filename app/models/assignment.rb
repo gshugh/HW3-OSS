@@ -446,7 +446,26 @@ class Assignment < ActiveRecord::Base
   ]
   # Provides an array of round statistics, including normalized averages and median values
   def review_rounds_statistics
+    # These represent rounds
+    aqs_with_round = AssignmentQuestionnaire.where(assignment_id: self.id).reject { |q| q.used_in_round.nil? }
+    aqs_with_round.sort_by! { |q| q.used_in_round }
+    # This hash maps question IDs to their zero-indexed positions within their questionnaire
+    question_id_index_hash = Hash.new
+    aqs_with_round.each do |q|
+      q.question_ids_in_order.each_with_index {|value, index| question_id_index_hash[value] = index}
+    end
+    question_id_index_hash
     @@stats
+
+
+  end
+
+  def review_responses_by_round
+    # This hash maps round numbers to arrays of ReviewResponseMap objects
+    round_rrms_hash = Hash.new
+    ResponseMap.where(reviewed_object_id: self.id, type: 'ReviewResponseMap').each do |rrm|
+
+    end
   end
 
   def self.export_details(csv, parent_id, detail_options)
