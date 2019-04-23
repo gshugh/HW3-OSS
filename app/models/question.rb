@@ -39,6 +39,14 @@ class Question < ActiveRecord::Base
     self.destroy
   end
 
+  def max_score
+    self.questionnaire.max_question_score
+  end
+
+  def min_score
+    self.questionnaire.min_question_score
+  end
+
   # for quiz questions, we store 'TrueFalse', 'ultipleChoiceCheckbox', 'MultipleChoiceRadio' in the DB, and the full names are returned below
   def get_formatted_question_type
     type = self.type

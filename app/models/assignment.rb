@@ -425,7 +425,7 @@ class Assignment < ActiveRecord::Base
     rounds = aqs_with_round.map { |q| q.used_in_round }
     rounds.sort!
   end
-  @@stats = [
+  @@sstats = [
     ReviewRoundStats.new([
       CriteriaStats.new([
         Stats.new(76, 3),
@@ -445,7 +445,7 @@ class Assignment < ActiveRecord::Base
     ])
   ]
   # Provides an array of round statistics, including normalized averages and median values
-  def review_rounds_statistics
+  def stats
     # These represent rounds
     aqs_with_round = AssignmentQuestionnaire.where(assignment_id: self.id).reject { |q| q.used_in_round.nil? }
     aqs_with_round.sort_by! { |q| q.used_in_round }
@@ -455,9 +455,64 @@ class Assignment < ActiveRecord::Base
       q.question_ids_in_order.each_with_index {|value, index| question_id_index_hash[value] = index}
     end
     question_id_index_hash
-    @@stats
-
-
+    # This hash maps rounds to criteria to scores, max_scores and min_scores
+    scores_hash = Hash.new
+    @@sstats
+    review_response_maps = ReviewResponseMap.where(reviewed_object_id: self.id)
+    review_response_maps.each do |review_response_map|
+      submitted_responses = review_response_map.response.reject { |r| !r.is_submitted }
+      submitted_responses.each do |response|
+        criteria_hash = scores_hash[response.round]
+        if criteria_hash.nil?
+          criteria_hash = Hash.new
+          scores_hash[response.round] = criteria_hash
+        end
+        answers = response.scores.reject { |s| s.answer.nil? }
+        answers.each do |answer|
+          criterion_hash = criteria_hash[answer.question_id]
+          if criterion_hash.nil?
+            criterion_hash = Hash.new
+            criteria_hash[answer.question_id] = criterion_hash
+          end
+          c_scores = criterion_hash[:scores]
+          if c_scores.nil?
+            c_scores = Array.new
+            criterion_hash[:scores] = c_scores
+          end
+          c_scores << answer.answer
+          if criterion_hash[:max_score].nil?
+            question = Question.find(answer.question_id)
+            criterion_hash[:question_id] = answer.question_id
+            criterion_hash[:max_score] = question.max_score
+            criterion_hash[:min_score] = question.min_score
+          end
+        end
+      end
+    end
+    results = Array.new
+    scores_hash.each do |round, criteria_hash|
+      round_results = Array.new
+      results[round-1] = round_results
+      criteria_hash.each do |question, criterion_hash|
+        criterion_results = Array.new
+        criterion_hash[:scores].sort!
+        s = criterion_hash[:scores]
+        if s.length.even?
+          criterion_hash[:median] = (s[s.length/2].to_f + s[(s.length-2)/2].to_f)/2.0
+        else
+          criterion_hash[:median] = s[(s.length-1)/2].to_f
+        end
+        mean = s.inject{ |sum, el | sum + el }.to_f / s.length
+        criterion_hash[:mean] = mean
+        max = criterion_hash[:max_score]
+        min = criterion_hash[:min_score]
+        normalized_mean = (mean - min.to_f)/(max.to_f - min.to_f)
+        criterion_hash[:normalized_mean] = normalized_mean * 100
+        criterion_hash.delete(:scores)
+        round_results[question_id_index_hash[criterion_hash[:question_id]]] = normalized_mean * 100
+      end
+    end
+    results
   end
 
   def review_responses_by_round
